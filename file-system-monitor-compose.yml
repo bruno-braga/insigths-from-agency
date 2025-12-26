@@ -4,7 +4,7 @@ services:
     tty: true
     build:
       context: .
-      dockerfile: ./Dockerfiles/Dockerfile_agno
+      dockerfile: ./Dockerfiles/Dockerfile_file-system-monitor
     env_file:
       - ./models/file-system-monitor/.env
     volumes:

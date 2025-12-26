@@ -1,0 +1,16 @@
+services:
+  project-analyser:
+    container_name: "project-analyser"
+    tty: true
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile_project-analyser
+    env_file:
+      - ./models/project-analyser/.env
+    volumes:
+      - "./models/project-analyser/:/app/"
+    working_dir: /app
+    command: "tail -f"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

@@ -21,38 +21,37 @@ rabbitmq_connection = pika.BlockingConnection(
 )
 
 channel = rabbitmq_connection.channel()
-channel.queue_declare(queue="file-system-monitor")
+channel.queue_declare(queue="project-analyser")
 
 db = SqliteDb(db_file=os.getenv("DB_PATH"))
 
 memory_tools = MemoryTools(db=db)
 
-fileSystemMonitor = Agent(
+projectAnalyser = Agent(
     tools=[ShellTools(), memory_tools],
     model=DeepSeek(id="deepseek-chat"),
     instructions=[
-        "You are the file system monitor.",
-        "Your goal is to fetch information about folder structures and files of project and save it to your memory.",
+        "You are the project analyser.",
+        "Your goal is to fetch information about the project and save it to your memory.",
+        "Do not run main.py.",
         "After running a command save its output to memory."
     ],
-    stream=True,
     db=db,
-    user_id="file-system-monitor",
-    debug_mode=True
+    stream=True,
+    user_id="project-analyser",
 )
 
-s1: RunOutput = fileSystemMonitor.run("Check the files in this folder.")
+s1: RunOutput = projectAnalyser.run(
+    "Check what kind of project is this.",
+)
 pprint_run_response(s1)
 
 if __name__ == "__main__":
-    memories = fileSystemMonitor.get_user_memories(
-        user_id="file-system-monitor")
+    memories = projectAnalyser.get_user_memories(user_id="project-analyser")
     memories_json = json.dumps(
         [memory.to_dict() for memory in memories],
         indent=4
     )
-
-    print(memories_json)
 
     channel.basic_publish(
         exchange="",

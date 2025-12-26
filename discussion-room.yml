@@ -1,0 +1,16 @@
+services:
+  discussion-room:
+    container_name: "discussion-room"
+    tty: true
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile_discussion-room
+    env_file:
+      - ./discussion-room/.env
+    volumes:
+      - "./discussion-room/:/app/"
+    working_dir: /app
+    command: "/bin/sh -c 'pymon main.py'"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

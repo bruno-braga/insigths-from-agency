@@ -5,25 +5,18 @@ connection = pika.BlockingConnection(
 )
 
 channel = connection.channel()
-channel.queue_declare(queue="router")
+channel.queue_declare(queue="discussion-room")
 
 
 def callback(ch, method, properties, body):
-    print("sending to discussion-room")
+    print("entering discussion-room")
 
     print(body.decode())
-
-    channel.queue_declare(queue="discussion-room")
-    channel.basic_publish(
-        exchange="",
-        routing_key="discussion-room",
-        body=body.decode()
-    )
 
 
 if __name__ == "__main__":
     channel.basic_consume(
-        queue="router",
+        queue="discussion-room",
         on_message_callback=callback,
         auto_ack=True
     )
