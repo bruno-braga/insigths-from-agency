@@ -1,0 +1,26 @@
+include:
+  - file-system-monitor-compose.yml
+
+services:
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: "rabbitmq:4.0-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+
+  router:
+    container_name: "router"
+    build:
+      context: .
+      dockerfile: Dockerfiles/Dockerfile_router
+    command: "/bin/sh -c 'pymon main.py'"
+    working_dir: /router
+    tty: true
+    volumes:
+      - "./router:/router"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

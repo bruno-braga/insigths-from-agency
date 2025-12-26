@@ -1,0 +1,16 @@
+services:
+  file-system-monitor:
+    container_name: "file-system-monitor"
+    tty: true
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile_agno
+    env_file:
+      - ./models/file-system-monitor/.env
+    volumes:
+      - "./models/file-system-monitor:/app/"
+    working_dir: /app
+    command: "tail -f"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
