@@ -1,3 +1,7 @@
 pika
 python-dotenv
 py-mon
+sqlalchemy
+alembic
+agno
+openai

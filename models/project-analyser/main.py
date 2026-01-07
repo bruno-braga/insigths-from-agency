@@ -41,10 +41,10 @@ projectAnalyser = Agent(
     user_id="project-analyser",
 )
 
-s1: RunOutput = projectAnalyser.run(
-    "Check what kind of project is this.",
-)
-pprint_run_response(s1)
+# s1: RunOutput = projectAnalyser.run(
+# "Check what kind of project is this.",
+# )
+# pprint_run_response(s1)
 
 if __name__ == "__main__":
     memories = projectAnalyser.get_user_memories(user_id="project-analyser")

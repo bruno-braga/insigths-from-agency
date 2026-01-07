@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
-import json
-import pika
-import os
-
-from agno.agent import Agent, RunOutput
-
-from agno.db.sqlite import SqliteDb
-
-from agno.models.deepseek import DeepSeek
-
-from agno.tools.shell import ShellTools
-from agno.tools.memory import MemoryTools
-
 from agno.utils.pprint import pprint_run_response
+from agno.tools.memory import MemoryTools
+from agno.tools.shell import ShellTools
+from agno.models.deepseek import DeepSeek
+from agno.db.sqlite import SqliteDb
+from agno.agent import Agent, RunOutput
+import os
+import pika
+import json
+import asyncio
 
 
 rabbitmq_connection = pika.BlockingConnection(
@@ -41,18 +37,25 @@ fileSystemMonitor = Agent(
     debug_mode=True
 )
 
-s1: RunOutput = fileSystemMonitor.run("Check the files in this folder.")
-pprint_run_response(s1)
+# s1: RunOutput = fileSystemMonitor.run("Check the files in this folder.")
+# pprint_run_response(s1)
 
 if __name__ == "__main__":
     memories = fileSystemMonitor.get_user_memories(
-        user_id="file-system-monitor")
-    memories_json = json.dumps(
-        [memory.to_dict() for memory in memories],
-        indent=4
+        user_id="file-system-monitor"
     )
 
-    print(memories_json)
+    def process(memory):
+        tmp = memory.to_dict()
+
+        return tmp
+
+    memories_json = json.dumps(
+        memories,
+        default=process
+    )
+
+    # print(memories_json)
 
     channel.basic_publish(
         exchange="",

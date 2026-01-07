@@ -1,8 +1,12 @@
 import pika
+import json
+import sqlite3
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host="rabbitmq")
 )
+
+conn = sqlite3.connect('router.db')
 
 channel = connection.channel()
 channel.queue_declare(queue="router")
@@ -10,8 +14,6 @@ channel.queue_declare(queue="router")
 
 def callback(ch, method, properties, body):
     print("sending to discussion-room")
-
-    print(body.decode())
 
     channel.queue_declare(queue="discussion-room")
     channel.basic_publish(
