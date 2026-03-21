@@ -1,0 +1,25 @@
+services:
+  tui:
+    container_name: "tui"
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile_tui
+    environment:
+      - TERM=xterm-256color
+      - LANG=C.UTF-8
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - "./tui:/app"
+      - "tui-data:/app/data"
+    working_dir: /app
+    command: "python main.py"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    profiles:
+      - tui
+
+volumes:
+  tui-data:

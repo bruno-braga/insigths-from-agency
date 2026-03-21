@@ -1,0 +1,86 @@
+#layout {
+    height: 1fr;
+}
+
+#sidebar {
+    width: 40;
+    height: 100%;
+    padding: 1;
+    overflow-y: auto;
+}
+
+#form-box {
+    height: auto;
+    max-height: 100%;
+    border: round white;
+    border-title-align: center;
+    padding: 1 2;
+}
+
+#agents-panel {
+    width: 30;
+    height: 100%;
+    padding: 1;
+}
+
+#agents-section {
+    height: 1fr;
+    border: round white;
+    border-title-align: center;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+#main-panel {
+    width: 1fr;
+    height: 100%;
+    padding: 1;
+}
+
+#output-section {
+    height: 1fr;
+    border: round white;
+    border-title-align: center;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+.field {
+    height: auto;
+    margin-bottom: 1;
+}
+
+.field Label {
+    margin-bottom: 1;
+}
+
+#instructions {
+    height: 6;
+}
+
+#btn-submit {
+    margin-top: 1;
+    width: 100%;
+}
+
+#btn-delete {
+    margin-top: 1;
+    width: 100%;
+}
+
+#btn-clear {
+    margin-top: 1;
+    width: 100%;
+}
+
+#dispatch-box {
+    height: auto;
+    border: round white;
+    border-title-align: center;
+    padding: 1 2;
+    margin-top: 1;
+}
+
+#btn-dispatch {
+    width: 100%;
+}

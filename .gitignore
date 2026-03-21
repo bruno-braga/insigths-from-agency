@@ -14,3 +14,9 @@ venv/
 .env
 
 /**/*.db
+
+/discussion-room/tmp
+
+# TUI
+/tui/data
+/tui/__pycache__

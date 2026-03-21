@@ -2,6 +2,7 @@ include:
   - file-system-monitor-compose.yml
   - project-analyser.yml
   - discussion-room.yml
+  - tui.yml
 
 services:
   rabbitmq:
