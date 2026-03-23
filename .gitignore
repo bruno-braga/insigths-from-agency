@@ -20,3 +20,7 @@ venv/
 # TUI
 /tui/data
 /tui/__pycache__
+
+# Library
+
+/library

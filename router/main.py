@@ -1,7 +1,8 @@
-from messaging import consume
+from messaging import consume, publish
 
 def callback(body, message):
-    print(body)
+    print(f"Routing to mysql-server: {body}")
+    publish("mysql-server", body)
     message.ack()
 
 

@@ -3,6 +3,7 @@ include:
   - project-analyser.yml
   - discussion-room.yml
   - tui.yml
+  - mysql-server.yml
 
 services:
   rabbitmq:

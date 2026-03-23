@@ -1,0 +1,15 @@
+services:
+  mysql-server:
+    container_name: "mysql-server"
+    tty: true
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile_mysql-server
+    volumes:
+      - "./containers/mysql-server/:/app/"
+      - "./library/mysql-server:/project:ro"
+    working_dir: /app
+    command: "/bin/sh -c 'pymon main.py'"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
