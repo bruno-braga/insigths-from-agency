@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfiles/Dockerfile_mysql-server
+    env_file:
+      - ./containers/mysql-server/.env
     volumes:
       - "./containers/mysql-server/:/app/"
       - "./library/mysql-server:/project:ro"

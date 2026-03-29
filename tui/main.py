@@ -1,11 +1,25 @@
+import threading
 from ulid import ULID
+from rich.markup import escape
 from textual.app import App, ComposeResult
 from textual import work
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Header, Footer, Input, Label, Select, Static, TextArea, Button, ListView, ListItem
+from textual.widgets import (
+    Header,
+    Footer,
+    Input,
+    Label,
+    Select,
+    Static,
+    TextArea,
+    Button,
+    ListView,
+    ListItem,
+    RichLog,
+)
 
 from db import init_db, get_all_agents, insert_agent, update_agent, delete_agent
-from messaging import publish_agents
+from messaging import publish_agents, run_tui_stream_loop
 
 
 LLM_MODELS = [
@@ -50,13 +64,59 @@ class InsightsApp(App):
                     yield ListView(id="agents-list")
             with Vertical(id="main-panel"):
                 with Vertical(id="output-section") as output:
-                    output.border_title = "Output"
-                    yield Static(id="output-content")
+                    output.border_title = "Live run log"
+                    yield RichLog(
+                        id="stream-log",
+                        wrap=True,
+                        highlight=True,
+                        markup=True,
+                        max_lines=8000,
+                    )
         yield Footer()
 
     def on_mount(self) -> None:
         init_db()
         self._refresh_list()
+        self.query_one("#stream-log", RichLog).clear()
+
+        self._stream_stop = threading.Event()
+        self._stream_thread = threading.Thread(
+            target=run_tui_stream_loop,
+            args=(self, self._stream_stop),
+            daemon=True,
+            name="tui-stream",
+        )
+        self._stream_thread.start()
+
+    def on_unmount(self) -> None:
+        if hasattr(self, "_stream_stop"):
+            self._stream_stop.set()
+
+    def _on_stream_event(self, payload: dict) -> None:
+        log = self.query_one("#stream-log", RichLog)
+        kind = payload.get("kind", "")
+        agent = escape(str(payload.get("agent", "?")))
+        text = escape(str(payload.get("text", "")))
+        if kind == "run_start":
+            log.write(f"[bold magenta]── {agent} ──[/]")
+        elif kind == "assistant":
+            log.write(f"[cyan]{agent}[/]\n{text}")
+        elif kind == "tool_start":
+            log.write(f"[yellow]{agent}[/] ▶ [dim]{text}[/]")
+        elif kind == "tool_done":
+            log.write(f"[green]{agent}[/] ◀ {text}")
+        elif kind == "error":
+            log.write(f"[bold red]{agent}[/] {text}")
+        elif kind == "done":
+            log.write(f"[dim]{agent} — run finished[/]")
+
+    def _clear_stream_log(self, banner: str) -> None:
+        log = self.query_one("#stream-log", RichLog)
+        log.clear()
+        log.write(banner)
+
+    def _append_stream_line(self, line: str) -> None:
+        self.query_one("#stream-log", RichLog).write(line)
 
     def _clear_form(self) -> None:
         self.query_one("#agent-id", Input).value = ""
@@ -79,21 +139,23 @@ class InsightsApp(App):
     def _handle_dispatch(self) -> None:
         agents = get_all_agents()
         if not agents:
-            self.app.call_from_thread(self.notify, "No agents to dispatch", severity="warning")
+            self.call_from_thread(self.notify, "No agents to dispatch", severity="warning")
             return
 
-        output = self.query_one("#output-content", Static)
-        self.app.call_from_thread(output.update, "[bold]Dispatching agents...[/bold]")
+        self.call_from_thread(self._clear_stream_log, "[bold]Dispatching agents…[/]")
 
         try:
             publish_agents(agents)
             names = ", ".join(a["name"] for a in agents)
-            msg = f"Dispatched {len(agents)} agent(s): {names}"
-            self.app.call_from_thread(output.update, f"[bold green]{msg}[/bold green]")
-            self.app.call_from_thread(self.notify, "Agents dispatched successfully")
+            msg = f"Queued {len(agents)} agent(s): {names}. Streaming below when workers run."
+            self.call_from_thread(self._append_stream_line, f"[bold green]{escape(msg)}[/]")
+            self.call_from_thread(self.notify, "Agents dispatched successfully")
         except Exception as e:
-            self.app.call_from_thread(output.update, f"[bold red]Error: {e}[/bold red]")
-            self.app.call_from_thread(self.notify, f"Dispatch failed: {e}", severity="error")
+            self.call_from_thread(
+                self._append_stream_line,
+                f"[bold red]Dispatch error: {escape(str(e))}[/]",
+            )
+            self.call_from_thread(self.notify, f"Dispatch failed: {e}", severity="error")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn-dispatch":
