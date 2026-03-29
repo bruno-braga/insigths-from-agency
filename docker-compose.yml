@@ -4,6 +4,7 @@ include:
   - discussion-room.yml
   - tui.yml
   - mysql-server.yml
+  - dozzle.yml
 
 services:
   rabbitmq:
